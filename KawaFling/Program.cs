@@ -14,15 +14,20 @@ namespace KawaFling
 
         public static void Main(string[] args)
         {
-            try { 
+            try
+            {
                 StreamReader read = new StreamReader("../../../config.txt", Encoding.UTF8);
                 TwitterRequest.Consumer_secret = read.ReadLine();
-            } catch(FileNotFoundException e)
+            }
+            catch (FileNotFoundException e)
             {
                 Console.WriteLine("파일을 찾을 수 없습니다.");
             }
-          
+
+            TwitterRequest.GetRequestToken();
+            
+            
         }
-        
+
     }
 }
