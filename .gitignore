@@ -261,4 +261,4 @@ __pycache__/
 *.pyc
 
 # Config File
-config
+config.txt
