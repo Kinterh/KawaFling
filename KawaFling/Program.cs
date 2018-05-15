@@ -25,6 +25,7 @@ namespace KawaFling
             }
 
             TwitterRequest.GetRequestToken();
+            TwitterRequest.oauth_verifier = Console.ReadLine();
             TwitterRequest.GetAccessToken();
         }
 
