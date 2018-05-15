@@ -11,6 +11,11 @@ namespace KawaFling
 {
     class TwitterRequest
     {
+        private bool IsUseAccess_token;
+
+        static string access_token;
+        static string access_token_secret;
+
         static string oauth_token;
         static string oauth_token_secret;
         static string oauth_verifier;
@@ -24,15 +29,44 @@ namespace KawaFling
 
         public static void GetAccessToken()
         {
+            string Timestamp = GetTimestamp();
+            string Nonce = GetNonce(Timestamp);
+            string SignatureBaseString = GetSignatureBaseString(Timestamp, Nonce, new Uri(@"https://api.twitter.com/oauth/access_token"), "POST");
+            string SHA1 = GetSha1Hash(Consumer_secret, oauth_token_secret, SignatureBaseString);
 
+            HttpWebRequest httpWebRequest = (HttpWebRequest)WebRequest.Create(@"https://api.twitter.com/oauth/access_token?oauth_verifier="+oauth_verifier);
+            httpWebRequest.Method = "GET";
+            httpWebRequest.ContentLength = 0;
+            httpWebRequest.UseDefaultCredentials = true;
+
+            string Header =
+                "OAuth realm=\"Twitter API\"," +
+                "oauth_token" + '"' + oauth_token + '"' + "," +
+                "oauth_signature_method=" + '"' + SignatureMethod + '"' + "," +
+                "oauth_consumer_key=" + '"' + ConsumerKey + '"' + "," +
+                "oauth_nonce=" + '"' + Nonce + '"' + "," +
+                "oauth_version=" + '"' + version + '"' + "," +
+                "oauth_timestamp=" + '"' + Timestamp + '"' + "," +
+                "oauth_signature = " + '"' + Uri.EscapeDataString(SHA1) + '"';
+
+            var webResponse = httpWebRequest.GetResponse();
+
+            Stream responseStream = webResponse.GetResponseStream();
+            string responseBody = String.Empty;
+            if (responseStream != null) responseBody = new StreamReader(responseStream).ReadToEnd();
+
+            access_token = Regex.Match(responseBody, @"oauth_token=([^&]+)").Groups[1].Value;
+            access_token_secret = Regex.Match(responseBody, @"oauth_token_secret=([^&]+)").Groups[1].Value;
+            Console.Write("\n{0}\n\n{1}", access_token, access_token_secret);
         }
 
         public static void GetRequestToken()
         {
             string Timestamp = GetTimestamp();
             string Nonce = GetNonce(Timestamp);
-            string SignatureBaseString = GetSignatureBaseString(Timestamp, Nonce);
-            string SHA1 = GetSha1Hash(Consumer_secret, SignatureBaseString);
+            string SignatureBaseString = GetSignatureBaseString(Timestamp, Nonce,
+                new Uri(@"https://api.twitter.com/oauth/request_token"), "POST");
+            string SHA1 = GetSha1Hash(Consumer_secret, String.Empty, SignatureBaseString);
 
             HttpWebRequest httpWebRequest = (HttpWebRequest)WebRequest.Create(@"https://api.twitter.com/oauth/request_token?oauth_callback=oob");
             httpWebRequest.Method = "POST";
@@ -50,12 +84,14 @@ namespace KawaFling
 
 
             httpWebRequest.Headers.Add("Authorization", Header);
-
+            Console.WriteLine(httpWebRequest.Headers);
+            Console.WriteLine(httpWebRequest.RequestUri);
             var webResponse = httpWebRequest.GetResponse();
 
             Stream responseStream = webResponse.GetResponseStream();
             string responseBody = String.Empty;
             if (responseStream != null) responseBody = new StreamReader(responseStream).ReadToEnd();
+            Console.WriteLine("request token 성공!");
 
             oauth_token = ParseQuerystringParameter("oauth_token", responseBody);
             oauth_token_secret = ParseQuerystringParameter("oauth_token_secret", responseBody);
@@ -64,6 +100,7 @@ namespace KawaFling
 
         static private string GetTimestamp() { return ((int)(DateTime.UtcNow - new DateTime(1970, 1, 1)).TotalSeconds).ToString(); }
         static private string GetNonce(string Timestamp) { return Convert.ToBase64String(Encoding.UTF8.GetBytes(Timestamp + Timestamp + Timestamp)); }
+
         private static string ParseQuerystringParameter(string parameterName, string text)
         {
             Match expressionMatch = Regex.Match(text, string.Format(@"{0}=(?<value>[^&]+)", parameterName));
@@ -76,13 +113,13 @@ namespace KawaFling
             return expressionMatch.Groups["value"].Value;
         }
 
-        public static string GetSha1Hash(string key, string message)
+        public static string GetSha1Hash(string key, string key2, string message)
         {
             string Sha1Result = String.Empty;
 
             string keys = string.Format(
                 CultureInfo.InvariantCulture,
-                "{0}&", Uri.EscapeDataString(key));
+                "{0}&{1}", Uri.EscapeDataString(key), Uri.EscapeDataString(key2));
 
             using (HMACSHA1 SHA1 = new HMACSHA1(Encoding.UTF8.GetBytes(keys)))
             {
@@ -94,17 +131,17 @@ namespace KawaFling
             return Sha1Result;
         }
 
-        private static string GetSignatureBaseString(string timestamp, string nonce)
+        private static string GetSignatureBaseString(string timestamp, string nonce, Uri uri, string method)
         {
             //1.Convert the HTTP Method to uppercase and set the output string equal to this value.
-            string Signature_Base_String = "POST";
+            string Signature_Base_String = method;
             Signature_Base_String = Signature_Base_String.ToUpper();
 
             //2.Append the ‘&’ character to the output string.
             Signature_Base_String = Signature_Base_String + "&";
 
             //3.Percent encode the URL and append it to the output string.
-            string PercentEncodedURL = Uri.EscapeDataString(@"https://api.twitter.com/oauth/request_token");
+            string PercentEncodedURL = Uri.EscapeDataString(uri.ToString());
 
             Signature_Base_String = Signature_Base_String + PercentEncodedURL;
 

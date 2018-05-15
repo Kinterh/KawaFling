@@ -25,8 +25,7 @@ namespace KawaFling
             }
 
             TwitterRequest.GetRequestToken();
-            
-            
+            TwitterRequest.GetAccessToken();
         }
 
     }
