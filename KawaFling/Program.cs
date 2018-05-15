@@ -7,6 +7,9 @@ using System.Net.Http;
 using System.Net.Sockets;
 using System.Net;
 using System.IO;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+
 namespace KawaFling
 {
     class Program
@@ -14,6 +17,7 @@ namespace KawaFling
 
         public static void Main(string[] args)
         {
+            
             try
             {
                 StreamReader read = new StreamReader("../../../config.txt", Encoding.UTF8);
@@ -24,9 +28,23 @@ namespace KawaFling
                 Console.WriteLine("파일을 찾을 수 없습니다.");
             }
 
-            TwitterRequest.GetRequestToken();
-            TwitterRequest.oauth_verifier = Console.ReadLine();
-            TwitterRequest.GetAccessToken();
+            if (!File.Exists("../../../AccessToken.json"))
+            {
+                TwitterRequest.GetRequestToken();
+                TwitterRequest.oauth_verifier = Console.ReadLine();
+                TwitterRequest.GetAccessToken();
+
+                File.WriteAllText("../../../AccessToken.json",
+                    new JObject(new JProperty("access_token", TwitterRequest.access_token),
+                                new JProperty("access_token_secret", TwitterRequest.access_token_secret)).ToString());
+            }
+            else
+            {
+                JObject @object = JObject.Parse(File.ReadAllText("../../../AccessToken.json"));
+                TwitterRequest.access_token = @object["access_token"].ToString();
+                TwitterRequest.access_token_secret = @object["access_token_secret"].ToString();
+            }
+            
         }
 
     }

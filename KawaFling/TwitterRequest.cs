@@ -13,8 +13,8 @@ namespace KawaFling
     {
         static Token isNeed;
 
-        static string access_token;
-        static string access_token_secret;
+        public static string access_token;
+        public static string access_token_secret;
 
         static string oauth_token;
         static string oauth_token_secret;
