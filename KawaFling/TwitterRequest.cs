@@ -11,6 +11,7 @@ namespace KawaFling
 {
     class TwitterRequest
     {
+        static Token isNeed;
         private bool IsUseAccess_token;
 
         static string access_token;
@@ -38,6 +39,8 @@ namespace KawaFling
             httpWebRequest.Method = "GET";
             httpWebRequest.ContentLength = 0;
             httpWebRequest.UseDefaultCredentials = true;
+            
+            isNeed = Token.oauth;
 
             string Header =
                 "OAuth realm=\"Twitter API\"," +
@@ -58,6 +61,8 @@ namespace KawaFling
             access_token = Regex.Match(responseBody, @"oauth_token=([^&]+)").Groups[1].Value;
             access_token_secret = Regex.Match(responseBody, @"oauth_token_secret=([^&]+)").Groups[1].Value;
             Console.Write("\n{0}\n\n{1}", access_token, access_token_secret);
+
+            isNeed = 0;
         }
 
         public static void GetRequestToken()
@@ -91,7 +96,7 @@ namespace KawaFling
             Stream responseStream = webResponse.GetResponseStream();
             string responseBody = String.Empty;
             if (responseStream != null) responseBody = new StreamReader(responseStream).ReadToEnd();
-            Console.WriteLine("request token 성공!");
+            Console.WriteLine("request token 성공!\n\n");
 
             oauth_token = ParseQuerystringParameter("oauth_token", responseBody);
             oauth_token_secret = ParseQuerystringParameter("oauth_token_secret", responseBody);
@@ -149,13 +154,14 @@ namespace KawaFling
             Signature_Base_String = Signature_Base_String + "&";
 
             //5.append parameter string to the output string.
-            Signature_Base_String = Signature_Base_String + Uri.EscapeDataString(
-                "oauth_callback=" + Callback +
-                "&oauth_consumer_key=" + ConsumerKey +
-                "&oauth_nonce=" + nonce +
-                "&oauth_signature_method=" + SignatureMethod +
-                "&oauth_timestamp=" + timestamp +
-                "&oauth_version=" + version);
+            Signature_Base_String = Signature_Base_String + Uri.EscapeDataString("oauth_callback=" + Callback);
+            Signature_Base_String = Signature_Base_String + Uri.EscapeDataString("&oauth_consumer_key=" + ConsumerKey);
+            Signature_Base_String = Signature_Base_String + Uri.EscapeDataString("&oauth_nonce=" + nonce);
+            Signature_Base_String = Signature_Base_String + Uri.EscapeDataString("&oauth_signature_method=" + SignatureMethod);
+            Signature_Base_String = Signature_Base_String + Uri.EscapeDataString("&oauth_timestamp=" + timestamp);
+            if(isNeed.HasFlag(Token.access))
+                Signature_Base_String = Signature_Base_String + Uri.EscapeDataString("&oauth_token=" + oauth_token);
+            Signature_Base_String = Signature_Base_String + Uri.EscapeDataString("&oauth_version=" + version);
             
             return Signature_Base_String;
         }
