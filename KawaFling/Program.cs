@@ -17,7 +17,7 @@ namespace KawaFling
 
         public static void Main(string[] args)
         {
-            
+            // OAuth 인증 절차
             try
             {
                 StreamReader read = new StreamReader("../../../config.txt", Encoding.UTF8);
@@ -41,10 +41,10 @@ namespace KawaFling
             else
             {
                 JObject @object = JObject.Parse(File.ReadAllText("../../../AccessToken.json"));
-                TwitterRequest.access_token = @object["access_token"].ToString();
-                TwitterRequest.access_token_secret = @object["access_token_secret"].ToString();
+                TwitterRequest.SetTokenFromFile(@object["access_token"].ToString(), @object["access_token_secret"].ToString());
             }
             
+
         }
 
     }

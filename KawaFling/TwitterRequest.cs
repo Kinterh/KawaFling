@@ -9,7 +9,7 @@ using System.Collections.Generic;
 
 namespace KawaFling
 {
-    class OAuth
+    class TwitterRequest
     {
         static Token isNeed;
 
@@ -27,6 +27,12 @@ namespace KawaFling
         static string version = "1.0";
 
         public static string Consumer_secret {private get; set; }
+
+        public static void SetTokenFromFile(string access_token, string access_token_secret)
+        {
+            TwitterRequest.access_token = access_token;
+            TwitterRequest.access_token_secret = access_token_secret;
+        }
 
         public static void GetAccessToken()
         {
