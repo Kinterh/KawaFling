@@ -34,13 +34,13 @@ namespace KawaFling
             TwitterRequest.access_token_secret = access_token_secret;
         }
 
-        static string MakeHeader()
+        static string MakeHeader(Uri uri, string method)
         {
             string Timestamp = GetTimestamp();
             string Nonce = GetNonce(Timestamp);
             string SignatureBaseString = GetSignatureBaseString(Timestamp, Nonce,
-                new Uri(@"https://api.twitter.com/oauth/access_token"), "POST");
-            string SHA1 = GetSha1Hash(Consumer_secret, oauth_token_secret, SignatureBaseString);
+                uri, method);
+            string SHA1 = GetSha1Hash(Consumer_secret, oauth_token_secret + "", SignatureBaseString);
 
             string Header =
                 "OAuth realm=\"Twitter API\"," +
@@ -60,6 +60,17 @@ namespace KawaFling
         {
             isNeed = Token.oauth;
 
+            HttpWebRequest httpWebRequest =
+                (HttpWebRequest)WebRequest.Create(@"https://api.twitter.com/1.1/statuses/update.json?status=" + text);
+
+            httpWebRequest.Method = "POST";
+            httpWebRequest.ContentLength = 0;
+            httpWebRequest.UseDefaultCredentials = true;
+
+            httpWebRequest.Headers.Add("Authorization", MakeHeader(new Uri(@"https://api.twitter.com/1.1/statuses/update.json"), "POST"));
+            Console.WriteLine(httpWebRequest.Headers);
+            Console.WriteLine(httpWebRequest.RequestUri);
+            var webResponse = httpWebRequest.GetResponse();
         }
 
         public static void GetAccessToken()
@@ -73,8 +84,8 @@ namespace KawaFling
             httpWebRequest.Method = "GET";
             httpWebRequest.ContentLength = 0;
             httpWebRequest.UseDefaultCredentials = true;
-            
-            httpWebRequest.Headers.Add("Authorization", MakeHeader());
+
+            httpWebRequest.Headers.Add("Authorization", MakeHeader(new Uri(@"https://api.twitter.com/oauth/access_token"), "POST"));
             Console.WriteLine(httpWebRequest.Headers);
             Console.WriteLine(httpWebRequest.RequestUri);
             var webResponse = httpWebRequest.GetResponse();
@@ -98,8 +109,8 @@ namespace KawaFling
             httpWebRequest.Method = "POST";
             httpWebRequest.ContentLength = 0;
             httpWebRequest.UseDefaultCredentials = true;
-            
-            httpWebRequest.Headers.Add("Authorization", MakeHeader());
+
+            httpWebRequest.Headers.Add("Authorization", MakeHeader(new Uri(@"https://api.twitter.com/oauth/request_token"), "POST"));
             Console.WriteLine(httpWebRequest.Headers);
             Console.WriteLine(httpWebRequest.RequestUri);
             var webResponse = httpWebRequest.GetResponse();
