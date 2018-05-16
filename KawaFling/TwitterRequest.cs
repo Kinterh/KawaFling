@@ -34,24 +34,13 @@ namespace KawaFling
             TwitterRequest.access_token_secret = access_token_secret;
         }
 
-        public static void GetAccessToken()
+        static string MakeHeader()
         {
-            isNeed = Token.oauth;
-
             string Timestamp = GetTimestamp();
             string Nonce = GetNonce(Timestamp);
             string SignatureBaseString = GetSignatureBaseString(Timestamp, Nonce,
                 new Uri(@"https://api.twitter.com/oauth/access_token"), "POST");
             string SHA1 = GetSha1Hash(Consumer_secret, oauth_token_secret, SignatureBaseString);
-
-            HttpWebRequest httpWebRequest = 
-                (HttpWebRequest)WebRequest.Create(String.IsNullOrEmpty(oauth_verifier) ? @"https://api.twitter.com/oauth/access_token" : @"https://api.twitter.com/oauth/access_token?oauth_verifier=" + oauth_verifier);
-
-            httpWebRequest.Method = "GET";
-            httpWebRequest.ContentLength = 0;
-            httpWebRequest.UseDefaultCredentials = true;
-            
-
 
             string Header =
                 "OAuth realm=\"Twitter API\"," +
@@ -59,11 +48,33 @@ namespace KawaFling
                 "oauth_nonce=" + '"' + Nonce + '"' + "," +
                 "oauth_signature_method=" + '"' + SignatureMethod + '"' + "," +
                 "oauth_timestamp=" + '"' + Timestamp + '"' + "," +
-                "oauth_token=" + '"' + oauth_token + '"' + "," +
                 "oauth_version=" + '"' + version + '"' + "," +
                 "oauth_signature=" + '"' + Uri.EscapeDataString(SHA1) + '"';
+            if (isNeed.HasFlag(Token.oauth)) Header = Header + "oauth_token=" + '"' + oauth_token + '"' + ",";
 
-            httpWebRequest.Headers.Add("Authorization", Header);
+
+            return Header;
+        }
+
+        public static void PostTweets(string text)
+        {
+            isNeed = Token.oauth;
+
+        }
+
+        public static void GetAccessToken()
+        {
+            
+            isNeed = Token.oauth;
+            
+            HttpWebRequest httpWebRequest = 
+                (HttpWebRequest)WebRequest.Create(String.IsNullOrEmpty(oauth_verifier) ? @"https://api.twitter.com/oauth/access_token" : @"https://api.twitter.com/oauth/access_token?oauth_verifier=" + oauth_verifier);
+
+            httpWebRequest.Method = "GET";
+            httpWebRequest.ContentLength = 0;
+            httpWebRequest.UseDefaultCredentials = true;
+            
+            httpWebRequest.Headers.Add("Authorization", MakeHeader());
             Console.WriteLine(httpWebRequest.Headers);
             Console.WriteLine(httpWebRequest.RequestUri);
             var webResponse = httpWebRequest.GetResponse();
@@ -82,31 +93,13 @@ namespace KawaFling
         public static void GetRequestToken()
         {
             isNeed = Token.callback;
-
-            string Timestamp = GetTimestamp();
-            string Nonce = GetNonce(Timestamp);
-            string SignatureBaseString = GetSignatureBaseString(Timestamp, Nonce,
-                new Uri(@"https://api.twitter.com/oauth/request_token"), "POST");
-            string SHA1 = GetSha1Hash(Consumer_secret, String.Empty, SignatureBaseString);
-
+            
             HttpWebRequest httpWebRequest = (HttpWebRequest)WebRequest.Create(@"https://api.twitter.com/oauth/request_token?oauth_callback=oob");
             httpWebRequest.Method = "POST";
             httpWebRequest.ContentLength = 0;
             httpWebRequest.UseDefaultCredentials = true;
-
-
-
-            string Header =
-                "OAuth realm=\"Twitter API\"," +
-                "oauth_consumer_key=" + '"' + ConsumerKey + '"' + "," +
-                "oauth_nonce=" + '"' + Nonce + '"' + "," +
-                "oauth_version=" + '"' + version + '"' + "," +
-                "oauth_signature_method=" + '"' + SignatureMethod + '"' + "," +
-                "oauth_timestamp=" + '"' + Timestamp + '"' + "," +
-                "oauth_signature = " + '"' + Uri.EscapeDataString(SHA1) + '"';
             
-
-            httpWebRequest.Headers.Add("Authorization", Header);
+            httpWebRequest.Headers.Add("Authorization", MakeHeader());
             Console.WriteLine(httpWebRequest.Headers);
             Console.WriteLine(httpWebRequest.RequestUri);
             var webResponse = httpWebRequest.GetResponse();
