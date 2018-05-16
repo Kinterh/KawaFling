@@ -44,7 +44,7 @@ namespace KawaFling
                 TwitterRequest.SetTokenFromFile(@object["access_token"].ToString(), @object["access_token_secret"].ToString());
             }
 
-            TwitterRequest.PostTweets("플링 조아");
+            TwitterRequest.PostTweets("플링 사랑해!");
         }
 
     }

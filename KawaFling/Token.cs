@@ -14,6 +14,7 @@ namespace KawaFling
         oauth = 4,
         oauth_secret = 8,
         verifier = 16,
-        callback = 32
+        callback = 32,
+        text = 64
     }
 }
