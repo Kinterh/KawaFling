@@ -13,12 +13,13 @@ namespace KawaFling
     {
         static Token isNeed;
 
-        public static string access_token;
-        public static string access_token_secret;
+        public static string access_token { get; private set; }
+        public static string access_token_secret { get; private set; }
 
         static string oauth_token;
         static string oauth_token_secret;
-        public static string oauth_verifier;
+
+        public static string oauth_verifier { get; set; }
 
         static string Callback = "oob";
         static string ConsumerKey = "xUV8UwzpJk4aMyTFzJXXXv4eQ";
