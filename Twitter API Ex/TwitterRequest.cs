@@ -90,7 +90,7 @@ namespace KawaFling
 
             HttpWebRequest httpWebRequest =
                 (HttpWebRequest)WebRequest.Create(@"https://api.twitter.com/1.1/statuses/update.json?status=" + text);
-
+               
             httpWebRequest.Method = "POST";
             httpWebRequest.ContentLength = 0;
             httpWebRequest.UseDefaultCredentials = true;
@@ -131,7 +131,7 @@ namespace KawaFling
 
         public static void GetRequestToken()
         {
-            isNeed = Token.callback | Token.oauth_secret;
+            isNeed = Token.callback;
             
             HttpWebRequest httpWebRequest = (HttpWebRequest)WebRequest.Create(@"https://api.twitter.com/oauth/request_token?oauth_callback=oob");
             httpWebRequest.Method = "POST";
@@ -220,7 +220,7 @@ namespace KawaFling
             //5.append parameter string to the output string.
             if (isNeed.HasFlag(Token.callback))
                 Signature_Base_String = Signature_Base_String + Uri.EscapeDataString("oauth_callback=" + Callback) + Uri.EscapeDataString("&oauth_consumer_key=" + ConsumerKey);
-            Signature_Base_String = Signature_Base_String + Uri.EscapeDataString("oauth_consumer_key=" + ConsumerKey);
+            else Signature_Base_String = Signature_Base_String + Uri.EscapeDataString("oauth_consumer_key=" + ConsumerKey);
             Signature_Base_String = Signature_Base_String + Uri.EscapeDataString("&oauth_nonce=" + nonce);
             Signature_Base_String = Signature_Base_String + Uri.EscapeDataString("&oauth_signature_method=" + SignatureMethod);
             Signature_Base_String = Signature_Base_String + Uri.EscapeDataString("&oauth_timestamp=" + timestamp);
